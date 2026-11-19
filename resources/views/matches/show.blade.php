@@ -152,7 +152,7 @@
         <div class="hero-pick-grid">
             @foreach($heroes as $h)
             <div class="hero-tile" data-hero="{{ $h->id }}">
-                @php($heroMeta = array_filter(array_merge([$h->targeting, $h->gaya_permainan], $h->roles ?? [])))
+                @php($heroMeta = array_filter(array_merge([$h->targeting, $h->gaya_permainan, $h->jenis_serangan, $h->area_serangan, $h->pola_serangan], $h->roles ?? [])))
                 <span class="hero-tip">{{ $h->nama_hero }} @if($heroMeta)<em>({{ Str::limit(implode(' · ', $heroMeta), 64) }})</em>@endif</span>
                 @if($h->foto)
                     <img src="{{ asset('storage/' . $h->foto) }}" alt="{{ $h->nama_hero }}" loading="lazy">

@@ -27,15 +27,7 @@ class HeroController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_hero' => 'required|string|max:255',
-            'targeting' => ['required', 'string', Rule::in(Hero::TARGETING_OPTIONS)],
-            'gaya_permainan' => ['required', 'string', Rule::in(Hero::GAMEPLAY_OPTIONS)],
-            'roles' => ['required', 'array', 'min:1', 'max:3'],
-            'roles.*' => ['required', 'string', 'distinct', Rule::in(Hero::ROLE_OPTIONS)],
-            'deskripsi' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        ]);
+        $validated = $this->validatedHeroData($request);
 
         if ($request->hasFile('foto')) {
             $validated['foto'] = $request->file('foto')->store('photos/heroes', 'public');
@@ -53,15 +45,7 @@ class HeroController extends Controller
 
     public function update(Request $request, Hero $hero)
     {
-        $validated = $request->validate([
-            'nama_hero' => 'required|string|max:255',
-            'targeting' => ['required', 'string', Rule::in(Hero::TARGETING_OPTIONS)],
-            'gaya_permainan' => ['required', 'string', Rule::in(Hero::GAMEPLAY_OPTIONS)],
-            'roles' => ['required', 'array', 'min:1', 'max:3'],
-            'roles.*' => ['required', 'string', 'distinct', Rule::in(Hero::ROLE_OPTIONS)],
-            'deskripsi' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        ]);
+        $validated = $this->validatedHeroData($request);
 
         if ($request->hasFile('foto')) {
             if ($hero->foto) {
@@ -89,8 +73,55 @@ class HeroController extends Controller
     {
         return [
             'targetingOptions' => Hero::TARGETING_OPTIONS,
-            'gameplayOptions' => Hero::GAMEPLAY_OPTIONS,
+            'attackStyleOptions' => Hero::ATTACK_STYLE_OPTIONS,
+            'attackTypeOptions' => Hero::ATTACK_TYPE_OPTIONS,
+            'attackAreaOptions' => Hero::ATTACK_AREA_OPTIONS,
+            'attackPatternOptions' => Hero::ATTACK_PATTERN_OPTIONS,
             'roleOptions' => Hero::ROLE_OPTIONS,
         ];
+    }
+
+    private function validatedHeroData(Request $request): array
+    {
+        $mainRole = $request->input('role_utama');
+        $supportRoles = $request->input('role_pendukung', []);
+        $supportRoles = is_array($supportRoles) ? $supportRoles : [];
+
+        $validated = $request->validate([
+            'nama_hero' => 'required|string|max:255',
+            'targeting' => ['required', 'string', Rule::in(Hero::TARGETING_OPTIONS)],
+            'gaya_permainan' => ['required', 'string', Rule::in(Hero::ATTACK_STYLE_OPTIONS)],
+            'jenis_serangan' => ['required', 'string', Rule::in(Hero::ATTACK_TYPE_OPTIONS)],
+            'area_serangan' => ['required', 'string', Rule::in(Hero::ATTACK_AREA_OPTIONS)],
+            'pola_serangan' => ['required', 'string', Rule::in(Hero::ATTACK_PATTERN_OPTIONS)],
+            'role_utama' => ['required', 'string', Rule::in(Hero::ROLE_OPTIONS)],
+            'role_pendukung' => ['nullable', 'array', 'max:2'],
+            'role_pendukung.*' => [
+                'required',
+                'string',
+                'distinct',
+                Rule::in(Hero::ROLE_OPTIONS),
+                Rule::notIn([$mainRole]),
+            ],
+            'role_tidak_direkomendasikan' => ['required', 'array', 'min:1', 'max:4'],
+            'role_tidak_direkomendasikan.*' => [
+                'required',
+                'string',
+                'distinct',
+                Rule::in(Hero::ROLE_OPTIONS),
+                Rule::notIn(array_merge([$mainRole], $supportRoles)),
+            ],
+            'deskripsi' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $validated['role_pendukung'] = $validated['role_pendukung'] ?? [];
+        $validated['roles'] = array_values(array_merge(
+            [$validated['role_utama']],
+            $validated['role_pendukung'],
+            $validated['role_tidak_direkomendasikan'],
+        ));
+
+        return $validated;
     }
 }

@@ -15,35 +15,61 @@ class Hero extends Model
         'Kombinasi Sedang-Jauh',
     ];
 
-    public const GAMEPLAY_OPTIONS = [
-        'Assassin (cepat)',
-        'Fighter',
-        'Support',
+    public const ATTACK_STYLE_OPTIONS = [
+        'Assasin',
+        'Petarung',
+        'Suport',
         'Tank',
-        'Damage dealer (pemberi damage tinggi)',
-        'Tank Support',
-        'Fighter support',
+        'Alteleri',
+        'Penembak Jitu',
     ];
 
     public const ROLE_OPTIONS = [
-        'Good for Jungler',
-        'Good for Goldlane',
-        'Good for ExpLane',
-        'Good for Roam',
-        'Good for Midlane',
-        'NotBad for Jungler',
-        'NotBad for Goldlane',
-        'NotBad for ExpLane',
-        'NotBad for Roam',
-        'NotBad for Midlane',
-        'Bad for Goldlane',
-        'Bad for Roam',
+        'Goldlane',
+        'Midlane',
+        'Jungler',
+        'Explane',
+        'Roam',
     ];
 
-    protected $fillable = ['nama_hero', 'targeting', 'gaya_permainan', 'roles', 'deskripsi', 'foto'];
+    public const ATTACK_TYPE_OPTIONS = [
+        'Magis',
+        'Physical',
+        'True Damage',
+        'Adaptive damage',
+    ];
+
+    public const ATTACK_AREA_OPTIONS = [
+        '1 Target',
+        'Area',
+    ];
+
+    public const ATTACK_PATTERN_OPTIONS = [
+        'Poke',
+        'Burst',
+        'DPS',
+        'DoT',
+    ];
+
+    protected $fillable = [
+        'nama_hero',
+        'targeting',
+        'gaya_permainan',
+        'jenis_serangan',
+        'area_serangan',
+        'pola_serangan',
+        'role_utama',
+        'role_pendukung',
+        'role_tidak_direkomendasikan',
+        'roles',
+        'deskripsi',
+        'foto',
+    ];
 
     protected $casts = [
         'roles' => 'array',
+        'role_pendukung' => 'array',
+        'role_tidak_direkomendasikan' => 'array',
     ];
 
     public function lineups()

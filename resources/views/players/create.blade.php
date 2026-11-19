@@ -1,14 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Add Personnel')
+@section('title', $personnelType === 'Atlet' ? 'Add Athlete' : 'Add Personnel')
 
 @section('content')
 <div class="form-container">
-    <h2>Add New Personnel</h2>
+    <h2>{{ $personnelType === 'Atlet' ? 'Add New Athlete' : 'Add New Personnel' }}</h2>
     <p class="required-note">* Required fields</p>
 
-    <form action="{{ route('players.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('players.store') }}" method="POST" enctype="multipart/form-data"
+        data-player-personnel-form data-personnel-category="{{ $personnelType }}" data-has-athlete-data="false">
         @csrf
+        <input type="hidden" name="kategori_personel" value="{{ $personnelType }}">
 
         <div class="form-grid">
             <div class="form-group full-width">
@@ -43,6 +45,13 @@
                     @endforeach
                 </select>
             </div>
+
+            @if($personnelType === 'Atlet')
+                @include('players._athlete-fields', [
+                    'player' => null,
+                    'athleteFieldsDisabled' => false,
+                ])
+            @endif
 
             <div class="form-group full-width">
                 <label>Esports Team &amp; Jabatan (otomatis)</label>

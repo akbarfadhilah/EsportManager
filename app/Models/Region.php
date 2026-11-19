@@ -23,4 +23,17 @@ class Region extends Model
     {
         return $this->belongsTo(Player::class, 'pelatih_timnas_id');
     }
+
+    public function getFotoNegaraUrlAttribute(): ?string
+    {
+        if (! $this->foto_negara) {
+            return null;
+        }
+
+        if (str_starts_with($this->foto_negara, 'Bendera/')) {
+            return asset($this->foto_negara);
+        }
+
+        return asset('storage/'.$this->foto_negara);
+    }
 }

@@ -28,7 +28,7 @@
             <tr>
                 <td>
                     @if($region->foto_negara)
-                        <img src="{{ asset('storage/' . $region->foto_negara) }}" class="team-logo-small" alt="">
+                        <img src="{{ $region->foto_negara_url }}" class="team-logo-small" alt="">
                     @else
                         <div class="team-logo-small">{{ substr($region->nama_negara, 0, 1) }}</div>
                     @endif

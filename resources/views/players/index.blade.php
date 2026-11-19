@@ -7,10 +7,25 @@
     <div class="page-header-info">
         <h2>👤 Personnel</h2>
     </div>
-    <a href="{{ route('players.create') }}" class="btn btn-primary">
+    <button type="button" class="btn btn-primary" data-open-personnel-type>
         <i class="fas fa-plus"></i> Add Personnel
-    </a>
+    </button>
 </div>
+
+<dialog class="personnel-type-dialog" data-personnel-type-dialog aria-labelledby="personnel-type-title" aria-describedby="personnel-type-description">
+    <div class="personnel-type-dialog-content">
+        <h2 id="personnel-type-title">tambah personel apa dulu nih bang?</h2>
+        <p id="personnel-type-description">
+            Menambahkan seseorang bisa berarti Atlet esports atau manajer biasa. Setiap orang yang ditambahkan di bagian
+            “Common” bisa diubah menjadi Atlet, begitu pun sebaliknya. Namun, seseorang yang sebelumnya ditambahkan
+            sebagai “Common” perlu sedikit penyesuaian sebagai Atlet.
+        </p>
+        <div class="personnel-type-options">
+            <a href="{{ route('players.create', ['type' => 'common']) }}" class="btn btn-secondary">Common</a>
+            <a href="{{ route('players.create', ['type' => 'athlete']) }}" class="btn btn-primary">Atlet</a>
+        </div>
+    </div>
+</dialog>
 
 <form action="{{ route('players.index') }}" method="GET" class="form-group">
     <label for="region_id">Filter by Region / Negara</label>
@@ -47,6 +62,7 @@
                 <td>
                     <span class="nickname">{{ $player->nickname_game }}</span>
                     <span class="real-name">{{ $player->nama_asli }}</span>
+                    <span class="badge badge-outline">{{ $player->kategori_personel }}</span>
                 </td>
                 <td>{{ $player->tanggal_lahir->format('d M Y') }}</td>
                 <td>
@@ -55,7 +71,7 @@
                 <td>
                     @if($player->region)
                         @if($player->region->foto_negara)
-                            <img src="{{ asset('storage/' . $player->region->foto_negara) }}" class="region-flag" alt="{{ $player->region->nama_negara }}" title="{{ $player->region->nama_negara }}">
+                            <img src="{{ $player->region->foto_negara_url }}" class="region-flag" alt="{{ $player->region->nama_negara }}" title="{{ $player->region->nama_negara }}">
                         @else
                             <span>{{ $player->region->nama_negara }}</span>
                         @endif
@@ -101,7 +117,8 @@
                 <td colspan="6">
                     <div class="empty-state">
                         <div class="empty-icon">👤</div>
-                        No personnel found. <a href="{{ route('players.create') }}">Add one!</a>
+                        No personnel found.
+                        <button type="button" class="btn btn-secondary btn-sm" data-open-personnel-type>Add one!</button>
                     </div>
                 </td>
             </tr>
@@ -109,4 +126,19 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    (() => {
+        const dialog = document.querySelector('[data-personnel-type-dialog]');
+        if (!dialog) return;
+
+        document.querySelectorAll('[data-open-personnel-type]').forEach((button) => {
+            button.addEventListener('click', () => dialog.showModal());
+        });
+
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) dialog.close();
+        });
+    })();
+</script>
 @endsection

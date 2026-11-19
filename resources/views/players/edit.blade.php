@@ -3,13 +3,39 @@
 @section('title', 'Edit Personnel')
 
 @section('content')
+@php
+    $selectedPersonnelType = old('kategori_personel', $player->kategori_personel ?? 'Common');
+    $athleteFieldsDisabled = $selectedPersonnelType !== 'Atlet' && ! $hasAthleteData;
+@endphp
 <div class="form-container">
     <h2>Edit Personnel: {{ $player->nickname_game }}</h2>
     <p class="required-note">* Required fields</p>
 
-    <form action="{{ route('players.update', $player) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('players.update', $player) }}" method="POST" enctype="multipart/form-data"
+        data-player-personnel-form
+        data-personnel-category="{{ $selectedPersonnelType }}"
+        data-has-athlete-data="{{ $hasAthleteData ? 'true' : 'false' }}">
         @csrf
         @method('PUT')
+
+        <fieldset class="form-group full-width personnel-status">
+            <legend>Status Personel *</legend>
+            <div class="personnel-status-options">
+                @foreach(['Common', 'Atlet'] as $type)
+                    <label class="hero-choice">
+                        <input type="radio" name="kategori_personel" value="{{ $type }}" required
+                            @checked($selectedPersonnelType === $type)>
+                        <span>{{ $type }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('kategori_personel') <p class="form-hint warn">{{ $message }}</p> @enderror
+        </fieldset>
+
+        @include('players._athlete-fields', [
+            'player' => $player,
+            'athleteFieldsDisabled' => $athleteFieldsDisabled,
+        ])
 
         <div class="form-grid">
             <div class="form-group full-width">

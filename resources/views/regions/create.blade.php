@@ -26,7 +26,7 @@
                 <input type="file" name="foto_negara" id="foto_negara" accept="image/*">
                 @if(isset($region) && $region->foto_negara)
                     <div class="form-current-image">
-                        <img src="{{ asset('storage/' . $region->foto_negara) }}" alt="Current Photo">
+                        <img src="{{ $region->foto_negara_url }}" alt="Current Photo">
                         <p class="form-hint">Current Photo</p>
                     </div>
                 @endif
