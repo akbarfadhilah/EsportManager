@@ -29,8 +29,24 @@
             <a href="{{ route('players.create', ['type' => 'common']) }}" class="btn btn-secondary">
                 <i class="fas fa-user-tie"></i> Common
             </a>
-            <a href="{{ route('players.create', ['type' => 'athlete']) }}" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" data-open-athlete-options>
                 <i class="fas fa-gamepad"></i> Atlet
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<dialog class="personnel-type-dialog" data-athlete-options-dialog aria-labelledby="athlete-options-title">
+    <div class="personnel-type-dialog-content">
+        <div class="import-step-kicker">ATLET / METODE INPUT</div>
+        <h2 id="athlete-options-title">Bagaimana ingin menambahkan atlet?</h2>
+        <p>Isi profil satu per satu, atau cocokkan kolom dari file untuk menambahkan beberapa atlet sekaligus.</p>
+        <div class="personnel-type-options">
+            <a href="{{ route('players.create', ['type' => 'athlete']) }}" class="btn btn-secondary">
+                <i class="fas fa-pen-to-square"></i> Isi manual
+            </a>
+            <a href="{{ route('players.import') }}" class="btn btn-primary">
+                <i class="fas fa-file-import"></i> Import dari Excel
             </a>
         </div>
     </div>
@@ -202,6 +218,12 @@
             button.addEventListener('click', openDialog);
         });
 
+        const athleteDialog = document.querySelector('[data-athlete-options-dialog]');
+        document.querySelector('[data-open-athlete-options]')?.addEventListener('click', () => {
+            dialog.close();
+            athleteDialog.showModal();
+        });
+
         // Tutup setelah animasi bounce-out selesai.
         dialog.addEventListener('animationend', (event) => {
             if (event.target === dialog && dialog.classList.contains('is-closing')) {
@@ -219,6 +241,10 @@
         dialog.addEventListener('cancel', (event) => {
             event.preventDefault();
             closeDialog();
+        });
+
+        athleteDialog.addEventListener('click', (event) => {
+            if (event.target === athleteDialog) athleteDialog.close();
         });
     })();
 </script>

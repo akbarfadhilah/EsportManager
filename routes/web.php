@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\PlayerImportController;
 use App\Http\Controllers\EsportTeamController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\MatchController;
@@ -14,6 +15,10 @@ Route::get('/', function () {
 });
 
 Route::resource('regions', RegionController::class);
+Route::get('players/import', [PlayerImportController::class, 'create'])->name('players.import');
+Route::post('players/import/preview', [PlayerImportController::class, 'preview'])->name('players.import.preview');
+Route::post('players/import/commit', [PlayerImportController::class, 'store'])->name('players.import.store');
+Route::post('players/import/cancel', [PlayerImportController::class, 'cancel'])->name('players.import.cancel');
 Route::resource('players', PlayerController::class);
 Route::resource('teams', EsportTeamController::class);
 Route::resource('heroes', HeroController::class);

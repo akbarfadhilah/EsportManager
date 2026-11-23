@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Player;
+use App\Models\Region;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,9 +16,11 @@ class PlayerPersonnelTypeTest extends TestCase
         $response = $this->get(route('players.index'));
 
         $response->assertOk()
-            ->assertSee('tambah personel apa dulu nih bang?')
+            ->assertSee('Tambah personel apa dulu?')
             ->assertSee(route('players.create', ['type' => 'common']), false)
-            ->assertSee(route('players.create', ['type' => 'athlete']), false);
+            ->assertSee(route('players.create', ['type' => 'athlete']), false)
+            ->assertSee(route('players.import'), false)
+            ->assertSee('Bagaimana ingin menambahkan atlet?');
     }
 
     public function test_common_personnel_uses_the_existing_form_without_athlete_fields(): void
@@ -124,6 +127,47 @@ class PlayerPersonnelTypeTest extends TestCase
         $this->assertSame(['Jungler', 'Explane', 'Roam'], $player->role_kurang_kompeten);
     }
 
+    public function test_import_preview_saves_athletes_only_after_confirmation_and_allows_optional_reserves(): void
+    {
+        Region::create(['nama_negara' => 'Indonesia']);
+        $this->get(route('players.import'))
+            ->assertOk()
+            ->assertSee('Import dari Excel')
+            ->assertSee('Pilih file');
+
+        $response = $this->post(route('players.import.preview'), $this->importRequestData());
+
+        $response->assertOk()
+            ->assertSee('Periksa data sebelum disimpan')
+            ->assertSee('atlet siap diimpor');
+        $this->assertDatabaseCount('players', 0);
+
+        $this->post(route('players.import.store'))->assertRedirect(route('players.index'));
+
+        $player = Player::where('nickname_game', 'ImportPlayer')->firstOrFail();
+        $this->assertSame('Atlet', $player->kategori_personel);
+        $this->assertSame('2000-01-02', $player->tanggal_lahir->format('Y-m-d'));
+        $this->assertSame([], $player->role_cadangan);
+        $this->assertSame(['Midlane', 'Jungler', 'Explane', 'Roam'], $player->role_kurang_kompeten);
+        $this->assertSame('', $player->deskripsi_pemain);
+        $this->assertSame('None', $player->jabatan);
+    }
+
+    public function test_import_rejects_dates_that_do_not_match_dd_mm_yyyy_calendar_dates(): void
+    {
+        Region::create(['nama_negara' => 'Indonesia']);
+        $data = $this->importRequestData();
+        $rows = json_decode($data['rows'], true);
+        $rows[0][2] = '31/02/2000';
+        $data['rows'] = json_encode($rows);
+
+        $this->post(route('players.import.preview'), $data)
+            ->assertStatus(422)
+            ->assertSee('format DD/MM/YYYY');
+
+        $this->assertDatabaseCount('players', 0);
+    }
+
     private function athleteData(array $overrides = []): array
     {
         return $this->personnelData(array_merge([
@@ -145,5 +189,27 @@ class PlayerPersonnelTypeTest extends TestCase
             'tanggal_lahir' => '2000-01-01',
             'region_id' => null,
         ], $overrides);
+    }
+
+    private function importRequestData(): array
+    {
+        $headers = [
+            'Real name', 'Nickname', 'Birth date', 'Region', 'Role utama 1',
+            'Role cadangan 1', 'Role cadangan 2', 'Gaya permainan 1', 'Gaya permainan 2',
+            'Gaya targeting 1', 'Gaya targeting 2', 'Gaya targeting 3', 'Deskripsi',
+        ];
+
+        return [
+            'headers' => json_encode($headers),
+            'rows' => json_encode([[
+                'Test Athlete', 'ImportPlayer', '02/01/2000', 'Indonesia', 'Goldlane',
+                '', '', 'Petarung', 'Tank', 'Dekat', 'Sedang', 'Jauh', '',
+            ]]),
+            'mapping' => json_encode(array_combine([
+                'nama_asli', 'nickname_game', 'tanggal_lahir', 'region', 'role_utama',
+                'role_cadangan_1', 'role_cadangan_2', 'gaya_permainan_1', 'gaya_permainan_2',
+                'targeting_urut_1', 'targeting_urut_2', 'targeting_urut_3', 'deskripsi_pemain',
+            ], range(0, 12))),
+        ];
     }
 }
